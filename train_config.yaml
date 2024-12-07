@@ -1,4 +1,4 @@
-config_cls_name: kd_runner
+config_cls_name: kd_trainer_config
 
 data:
     data_name: query_intention
@@ -15,7 +15,7 @@ model:
     model_dir: '/workspaces/data/cache/huggingface/hub/models--google--flan-t5-large'
 
 generation:
-  temperature: 0.3
+    temperature: 0.3
     top_p: 0.9
     repetition_penalty: 1.1
     

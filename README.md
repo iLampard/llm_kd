@@ -1,2 +1,11 @@
-# llm_mt
-Multi-Task Finetuning for (Tiny) LLMs
+# llm_kd
+LLM Knowledge Distillation
+
+
+
+
+
+
+
+# Reference 
+- [YikunHan42/TinyLLM](https://github.com/YikunHan42/TinyLLM)
