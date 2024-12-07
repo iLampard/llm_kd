@@ -12,7 +12,7 @@ data:
     
 model:
     model_name: 'flan-t5'
-    model_dir: 'models/flan-t5'
+    model_dir: '/workspaces/data/cache/huggingface/hub/models--google--flan-t5-large'
 
 generation:
   temperature: 0.3
