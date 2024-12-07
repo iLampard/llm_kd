@@ -32,8 +32,8 @@ def test_data_loader(data_loader):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--config', type=str, default='../train_config.yaml')
-    parser.add_argument('--test_loader', action='store_true', help='Test the data loader functionality')
+    parser.add_argument('--config', type=str, default='data_config.yaml')
+    parser.add_argument('--test_loader', default='true', help='Test the data loader functionality')
     args = parser.parse_args()
 
     config = Config.build_from_yaml_file(args.config)

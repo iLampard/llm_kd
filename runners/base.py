@@ -51,7 +51,3 @@ class KnowledgeDistillationRunner(Runner):
             "eval_metrics": metrics,
             "model_path": self.training_config.output_dir
         }
-        
-        
-        
-        return 
