@@ -12,10 +12,9 @@ from transformers import Seq2SeqTrainingArguments
 from utils.metrics import compute_metrics_text
 from data_process import MultiTeacherDataCollator
 from trainers.multiteacher import BaseTrainer
-import datetime
+from datetime import datetime
 from easyllm_kit.utils import get_logger, save_json
 from easyllm_kit.models import LLM
-from configs.train_config import KDTrainerConfig
 
 logger = get_logger('kd_runner', 'kd_runner.log')
 
@@ -36,15 +35,16 @@ class Runner(Registrable):
 class KnowledgeDistillationRunner(Runner):
 
     def __init__(self, config):
-        self.config = KDTrainerConfig.parse_from_yaml_config(config)
         self.model_config = config["model_config"]
         self.generation_config = config["generation_config"]
         self.training_config = config["training_config"]
         self.data_config = config["data_config"]
+        self.config = config
 
         # Setup directories
         self.setup_directories()
 
+    @staticmethod
     def get_config_dir(args):
         """
         Constructs a directory path based on training arguments for model configurations.
@@ -67,9 +67,11 @@ class KnowledgeDistillationRunner(Runner):
 
         # Setup output directory
         self.training_config.output_dir = f'ckpts/{config_dir}/{run}'
-        if os.path.exists(self.training_config.output_dir) and self.training_config.overwrite_output:
+        if os.path.exists(self.training_config.output_dir):
             logging.info('Found existing checkpoint directory. Deleting for fresh start.')
             shutil.rmtree(self.training_config.output_dir)
+        else:
+            os.makedirs(self.training_config.output_dir)
 
         # Setup logging directory
         self.training_config.logging_dir = f'logs/{config_dir}/{run}'

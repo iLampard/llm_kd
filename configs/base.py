@@ -21,4 +21,4 @@ class Config(Registrable):
         assert config.get('config_cls_name', None) is not None, "config_cls_name is not set"
         config_cls_name = config.get('config_cls_name')
         config_cls = Config.by_name(config_cls_name.lower())
-        return config_cls.parse_from_yaml_config(config, runner_name=config['runner_name'])
+        return config_cls.parse_from_yaml_config(config, runner_name=config.get('runner_name', None))

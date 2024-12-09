@@ -12,8 +12,8 @@ data:
   rationale_key: 'reasoning'
 
 model:
-  model_name: 'flan-t5'
-  model_dir: '/workspaces/data/cache/huggingface/hub/models--google--flan-t5-large'
+  model_name: flan-t5
+  model_dir: /workspaces/data/cache/huggingface/hub/models--google--flan-t5-large
 
 generation:
   temperature: 0.3

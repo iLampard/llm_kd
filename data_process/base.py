@@ -14,8 +14,8 @@ class BaseDataLoader(Registrable):
 
     @staticmethod
     def build_from_config(config):
-        data_config = asdict(config["data_config"])
-        return BaseDataLoader.by_name(data_config["data_name"])(**data_config)
+        data_config = config["data_config"]
+        return BaseDataLoader.by_name(data_config.data_name)(**asdict(data_config))
 
     def load_datasets(self) -> DatasetDict:
         """Loads datasets from JSON files."""
@@ -35,9 +35,9 @@ class BaseDataLoader(Registrable):
 class QueryIntentionDataLoader(BaseDataLoader):
     def __init__(self,
                  train_dir: str,
-                 valid_dir: str,
-                 test_dir: str,
-                 batch_size: int,
+                 valid_dir: str = None,
+                 test_dir: str = None,
+                 batch_size: int = 8,
                  input_keys: List[str] = None,
                  output_keys: List[str] = None,
                  rationale_key: str = None,
