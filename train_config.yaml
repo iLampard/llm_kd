@@ -1,24 +1,41 @@
 config_cls_name: kd_trainer_config
+runner_name: kd_runner
 
 data:
-    data_name: query_intention
-    train_dir: query_train.json
-    valid_dir: query_valid.json
-    test_dir: query_test.json
+  data_name: query_intention
+  train_dir: examples/data/query_train.json
+  valid_dir: examples/data/query_valid.json
+  test_dir: examples/data/query_test.json
 
-    input_keys: ['query', 'context']
-    output_keys: ['intention', 'main_category', 'color', 'gender']
-    rationale_key: 'reasoning'
+  input_keys: [ 'query', 'context' ]
+  output_keys: [ 'intention', 'main_category', 'color', 'gender' ]
+  rationale_key: 'reasoning'
 
 model:
-    model_name: 'flan-t5'
-    model_dir: '/workspaces/data/cache/huggingface/hub/models--google--flan-t5-large'
+  model_name: 'flan-t5'
+  model_dir: '/workspaces/data/cache/huggingface/hub/models--google--flan-t5-large'
 
 generation:
-    temperature: 0.3
-    top_p: 0.9
-    repetition_penalty: 1.1
+  temperature: 0.3
+  top_p: 0.9
+  repetition_penalty: 1.1
 
 training:
-    learning_rate: 1e-4
-    output_dir: './outputs'
+  trainer_name: multiteacher
+  teacher_prefixes:
+    - flan-t5
+  # Standard Seq2SeqTrainingArguments parameters
+  learning_rate: 1e-4
+  output_dir: "outputs"
+  evaluation_strategy: "steps"
+  eval_steps: 100
+  save_strategy: "steps"
+  save_steps: 100
+  per_device_train_batch_size: 8
+  per_device_eval_batch_size: 8
+  gradient_accumulation_steps: 1
+  max_steps: 1000
+  bf16: false
+  logging_strategy: "steps"
+  logging_steps: 100
+  generation_max_length: 128

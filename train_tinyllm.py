@@ -4,7 +4,7 @@ from configs import Config
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--config', type=str, default='train_config.yaml')
+    parser.add_argument('--config_dir', type=str, default='train_config.yaml')
     args = parser.parse_args()
     
     config = Config.build_from_yaml_file(args.config_dir)

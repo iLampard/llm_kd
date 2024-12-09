@@ -22,31 +22,53 @@ class DatasetArguments:
 
 @dataclass
 class KDTrainingArguments(Seq2SeqTrainingArguments):
-    # Knowledge distillation specific arguments
-    alpha: float = field(default=0.5, metadata={"help": "Weight for knowledge distillation loss"})
-    beta: float = field(default=0.3, metadata={"help": "Weight for teacher prediction loss"})
-    gamma: float = field(default=0.2, metadata={"help": "Weight for rationale generation loss"})
-    output_rationale: bool = field(default=False, metadata={"help": "Whether to output rationale during generation"})
+    # Knowledge distillation specific parameters
+    run_id: int = field(default=0)
 
-    # Training specific arguments
-    eval_steps: int = field(default=500, metadata={"help": "Number of steps between evaluations"})
-    max_steps: int = field(default=10000, metadata={"help": "Maximum number of training steps"})
-    learning_rate: float = field(default=5e-5, metadata={"help": "Learning rate"})
-    gradient_accumulation_steps: int = field(default=1, metadata={"help": "Number of steps for gradient accumulation"})
-    gen_max_len: int = field(default=128, metadata={"help": "Maximum length for generation"})
+    trainer_name: str = field(
+        default='multiteacher',
+        metadata={"help": "Name of the trainer to use"}
+    )
 
-    # Hardware and optimization arguments
-    bf16: bool = field(default=False, metadata={"help": "Whether to use bf16 precision"})
-    local_rank: int = field(default=-1, metadata={"help": "Local rank for distributed training"})
+    alpha: float = field(
+        default=0.5,
+        metadata={"help": "Weight for teacher prediction loss"}
+    )
+    beta: float = field(
+        default=0.3,
+        metadata={"help": "Weight for auxiliary task loss"}
+    )
+    gamma: float = field(
+        default=0.2,
+        metadata={"help": "Weight for consistency loss"}
+    )
+    output_rationale: bool = field(
+        default=False,
+        metadata={"help": "Whether to output rationales during generation"}
+    )
+    teacher_prefixes: List[str] = field(
+        default_factory=list,
+        metadata={"help": "List of teacher model prefixes"}
+    )
+    pred_weight: float = field(
+        default=0.4,
+        metadata={"help": "Weight for main prediction model loss"}
+    )
 
     def __post_init__(self):
+        """
+        Post-initialization processing to set up derived parameters
+        and validate configurations.
+        """
         super().__post_init__()
-        # Set default values for parent class attributes
-        self.remove_unused_columns = False
-        self.evaluation_strategy = "steps"
-        self.save_strategy = "no"
-        self.predict_with_generate = True
-        self.prediction_loss_only = False
+        # Dynamically add weight fields for each teacher
+        if self.teacher_prefixes:
+            default_teacher_weight = (1.0 - self.pred_weight) / len(self.teacher_prefixes)
+            for prefix in self.teacher_prefixes:
+                if not hasattr(self, f'{prefix}_weight'):
+                    setattr(self, f'{prefix}_weight',
+                            field(default=default_teacher_weight,
+                                  metadata={"help": f"Weight for {prefix} teacher loss"}))
 
 
 @Config.register('kd_trainer_config')
@@ -61,5 +83,6 @@ class KDTrainerConfig(Config):
             'model_config': model_config,
             'generation_config': generation_config,
             'training_config': training_config,
-            'data_config': data_config
+            'data_config': data_config,
+            **kwargs
         }

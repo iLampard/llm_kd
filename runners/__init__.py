@@ -1,4 +1,3 @@
-from configs.base import Config
-from configs.train_config import KDTrainerConfig
+from runners.base import Runner, KnowledgeDistillationRunner
 
-__all__ = ['Config', 'KDTrainerConfig']
+__all__ = ['Runner', 'KnowledgeDistillationRunner']
