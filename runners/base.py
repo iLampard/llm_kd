@@ -84,7 +84,7 @@ class KnowledgeDistillationRunner(Runner):
         training_args = Seq2SeqTrainingArguments(
             output_dir=self.training_config.output_dir,
             remove_unused_columns=False,
-            evaluation_strategy=self.training_config.evaluation_strategy,
+            eval_strategy=self.training_config.eval_strategy,
             eval_steps=self.training_config.eval_steps,
             save_strategy=self.training_config.save_strategy,
             save_steps=self.training_config.eval_steps,
@@ -101,14 +101,14 @@ class KnowledgeDistillationRunner(Runner):
             local_rank=self.training_config.local_rank,
             bf16=self.training_config.bf16,
             generation_max_length=self.training_config.generation_max_length,
-            prediction_loss_only=False,
-            # Add any additional training arguments from config
-            **asdict(self.training_config)
+            prediction_loss_only=False
         )
         return training_args
 
     def setup_student_model(self):
-        self.student_model, self.student_tokenizer = LLM.build_from_config(self.model_config)
+        model_cls = LLM.build_from_config(self.config)
+        self.student_model = model_cls.model
+        self.student_tokenizer = model_cls.tokenizer
 
     def setup_data(self) -> DatasetDict:
         """Setup and load the dataset."""
@@ -141,7 +141,7 @@ class KnowledgeDistillationRunner(Runner):
             Dictionary containing tokenized inputs and labels
         """
         tokenizer = self.student_tokenizer
-        max_input_length = self.training_config.max_input_length
+        max_input_length = self.model_config.model_max_length
         teacher_prefixes = self.training_config.teacher_prefixes  # e.g., ['t5', 'llama', 'gpt']
 
         # Tokenize main prediction inputs
@@ -173,7 +173,7 @@ class KnowledgeDistillationRunner(Runner):
             labels = tokenizer(
                 [str(ex) for ex in examples['outputs']],
                 max_length=max_input_length,
-                truncation=self.generation_config.truncation
+                truncation=True
             )
             model_inputs['labels'] = labels['input_ids']
 
@@ -211,21 +211,23 @@ class KnowledgeDistillationRunner(Runner):
             'data_collator': data_collator,
             'tokenizer': self.student_tokenizer,
             'compute_metrics': compute_metrics_text(self.student_tokenizer),
+            'teacher_prefixes': self.training_config.teacher_prefixes,  # Make sure this is included
             # Add teacher-specific parameters
             'alpha': self.training_config.alpha,
             'beta': self.training_config.beta,
             'gamma': self.training_config.gamma,
             'output_rationale': self.training_config.output_rationale,
         }
-
+        # only keep trainer_name in training_config
         # Initialize trainer using registrable pattern
-        self.trainer = BaseTrainer.build_from_config(self.config, **trainer_kwargs)
+        self.trainer = BaseTrainer.build_from_config({'trainer_name': self.training_config.trainer_name},
+                                                     **trainer_kwargs)
 
     def run(self):
         """Run the knowledge distillation process."""
         # Setup all components
-        self.setup_data()
         self.setup_student_model()
+        self.setup_data()
         self.setup_trainer()
 
         # Train the model
@@ -233,7 +235,7 @@ class KnowledgeDistillationRunner(Runner):
 
         # Save the final model
         if self.training_config.save_strategy != 'no':
-            self.trainer.save_model(self.output_dir)
+            self.trainer.save_model(self.training_config.output_dir)
 
         # Evaluate the model
         metrics = self.trainer.evaluate()
@@ -241,5 +243,5 @@ class KnowledgeDistillationRunner(Runner):
         return {
             "train_results": train_result,
             "eval_metrics": metrics,
-            "model_path": self.output_dir
+            "model_path": self.training_config.output_dir
         }

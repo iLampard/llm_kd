@@ -35,9 +35,9 @@ class BaseDataLoader(Registrable):
 class QueryIntentionDataLoader(BaseDataLoader):
     def __init__(self,
                  train_dir: str,
-                 valid_dir: str = None,
-                 test_dir: str = None,
-                 batch_size: int = 8,
+                 valid_dir: str,
+                 test_dir: str,
+                 batch_size: int,
                  input_keys: List[str] = None,
                  output_keys: List[str] = None,
                  rationale_key: str = None,

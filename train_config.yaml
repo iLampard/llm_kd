@@ -3,9 +3,9 @@ runner_name: kd_runner
 
 data:
   data_name: query_intention
-  train_dir: examples/data/query_train.json
-  valid_dir: examples/data/query_valid.json
-  test_dir: examples/data/query_test.json
+  train_dir: data/query_train.json
+  valid_dir: data/query_valid.json
+  test_dir: data/query_test.json
 
   input_keys: [ 'query', 'context' ]
   output_keys: [ 'intention', 'main_category', 'color', 'gender' ]

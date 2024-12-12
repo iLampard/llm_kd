@@ -30,6 +30,11 @@ class KDTrainingArguments(Seq2SeqTrainingArguments):
         metadata={"help": "Name of the trainer to use"}
     )
 
+    batch_size: int = field(
+        default=8,
+        metadata={"help": "Batch size per device for training and evaluation"}
+    )
+
     alpha: float = field(
         default=0.5,
         metadata={"help": "Weight for teacher prediction loss"}
